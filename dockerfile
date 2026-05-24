@@ -54,17 +54,27 @@ RUN if [ -f package-lock.json ]; then sed -i 's|https://mirror-npm.runflare.com/
 # ============================================
 # ۵. نصب پکیج‌ها و کامپایل کردن استایل‌ها
 # ============================================
+# ============================================
+# ۵. نصب اولیه پکیج‌های کامپوزر و ان‌پی‌ام (بدون بیلد)
+# ============================================
 RUN composer install --no-dev --no-autoloader --no-interaction --prefer-dist
 
 RUN if [ -f package.json ]; then \
-        npm install --fetch-timeout=600000 --fetch-retries=5 && \
-        npm run build; \
+        npm install --fetch-timeout=600000 --fetch-retries=5; \
     fi
-# ۶. کپی کردن کل کدهای پروژه و لود نهایی اتولودر
+
+# ============================================
+# ۶. کپی کردن کل کدهای پروژه (حالا پوشه resources کپی می‌شود)
 # ============================================
 COPY . .
-RUN composer dump-autoload --optimize --no-dev
 
+# حالا که همه فایل‌ها کپی شدند، فایل‌های فرانت‌اند را کامپایل می‌کنیم
+RUN if [ -f package.json ]; then \
+        npm run build; \
+    fi
+
+# لود نهایی اتولودر کامپوزر
+RUN composer dump-autoload --optimize --no-dev
 # ============================================
 # ۷. ساختارمند کردن استوریج و دیتابیس سشن (SQLite)
 # ============================================

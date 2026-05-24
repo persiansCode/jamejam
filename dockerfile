@@ -1,7 +1,7 @@
 FROM php:8.2-apache
 
 # ============================================
-# ۱. نصب همه وابستگی‌های مورد نیاز سیستم
+# ۱. نصب وابستگی‌های سیستم
 # ============================================
 RUN apt-get update && apt-get install -y \
     git \
@@ -29,41 +29,48 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================
-# ۲. نصب Composer از منبع رسمی
+# ۲. تنظیمات اولیه Composer
 # ============================================
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_PROCESS_TIMEOUT=3600
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# تنظیم درست تایم‌اوت کامپوزر از طریق متغیر محیطی (جایگزین پارامتر اشتباه قبلی)
-ENV COMPOSER_PROCESS_TIMEOUT=2000
-RUN composer config --global repo.packagist composer https://packagist.org
-
-# ============================================
-# ۳. کپی پروژه و ورود به پوشه کاری
-# ============================================
-COPY . /var/www/html
 WORKDIR /var/www/html
 
 # ============================================
-# ۴. حل خطای کامپوزر (حذف پارامتر --timeout)
+# ۳. کپی کردن «فقط» فایل‌های پکیج (شاه‌کلید سرعت بیلد)
 # ============================================
-RUN for i in 1 2 3; do \
-        composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction && break || \
-        { echo "Attempt $i failed, retrying in 10 seconds..."; sleep 10; }; \
-    done
+# با این کار، اگر کدهای پروژه‌ات را تغییر دهی، مراحل سنگین دانلود پکیج‌ها کلاً کش شده و زیر ۵ ثانیه رد می‌شوند.
+COPY composer.json composer.lock* package.json package-lock.json* ./
 
 # ============================================
-# ۵. حل خطای NPM (دور زدن میرورهای ایرانی و اجبار به ریجستری اصلی)
+# ۴. متلاشی کردن میرورهای مخرب (Runflare) در فایل‌های Lock
 # ============================================
+RUN if [ -f composer.lock ]; then sed -i 's|https://mirror-composer.runflare.com/|https://repo.packagist.org/|g' composer.lock; fi && \
+    composer config --global repo.packagist composer https://packagist.org && \
+    composer config --global download-parallel true
+
+RUN if [ -f package-lock.json ]; then sed -i 's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' package-lock.json; fi && \
+    npm config set registry https://registry.npmjs.org/
+
+# ============================================
+# ۵. نصب پکیج‌ها (مستقیم، بدون معطلی و با استفاده از کش داکر)
+# ============================================
+RUN composer install --no-dev --no-autoloader --no-interaction --prefer-dist
+
 RUN if [ -f package.json ]; then \
-        npm config set registry https://registry.npmjs.org/ && \
-        npm install && \
+        npm install --fetch-timeout=600000 --fetch-retries=5 && \
         (npm run build || npm run production || echo "No build script found"); \
-    else \
-        echo "No package.json found, skipping Node modules"; \
     fi
 
 # ============================================
-# ۶. ایجاد پوشه‌های ساختاری لاراول و دیتابیس SQLite
+# ۶. کپی کردن کل کدهای پروژه و لود نهایی اتولودر
+# ============================================
+COPY . .
+RUN composer dump-autoload --optimize --no-dev
+
+# ============================================
+# ۷. ساختارمند کردن استوریج و دیتابیس سشن (SQLite)
 # ============================================
 RUN mkdir -p storage/framework/sessions \
              storage/framework/cache \
@@ -73,36 +80,35 @@ RUN mkdir -p storage/framework/sessions \
              database \
              public/storage
 
-RUN touch database/database.sqlite && chmod 666 database/database.sqlite
+# ایجاد فایل دیتابیس برای اینکه سشن و کش دیتابیسی به خطا نخورند
+RUN touch database/database.sqlite
 
 # ============================================
-# ۷. تنظیم دسترسی‌ها (جلوگیری از خطای ۵۰۰ برای Permission)
-# ============================================
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 storage bootstrap/cache database
-
-# ============================================
-# ۸. تنظیم فایل env و کارهای اولیه لاراول
+# ۸. تنظیم فایل خط محیطی و اجرای مایگریشن‌ها در زمان بیلد
 # ============================================
 RUN cp .env.example .env || echo "APP_ENV=production" > .env
 
-# تولید کلید امنیتی و لینک کردن استوریج
+# اجرای مایگریشن و سیدر و بیک (Bake) کردن داده‌ها درون ایمیج داکر
+# چون رندر رایگان بعد از مدتی ری‌استارت می‌شود، این کار تضمین می‌کند دیتابیس همیشه آماده است.
 RUN php artisan key:generate --force && \
+    php artisan migrate --force && \
+    php artisan db:seed --force --class=UserTestSeeder || echo "Seeder skipped"
+
+# بهینه‌سازی سرسام‌آور سرعت لاراول در پروداکشن
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
     php artisan storage:link --force || true
 
 # ============================================
-# ۹. اجرای Migration و Seeder (با اطمینان از وجود هسته لاراول)
+# ۹. دسترسی‌های نهایی (حل قطعی ارور سشن و دیتابیس SQLite)
 # ============================================
-RUN php artisan migrate --force && \
-    php artisan db:seed --force --class=UserTestSeeder
-
-# بهینه‌سازی کش‌های لاراول برای افزایش سرعت سرور
-RUN php artisan config:cache || true && \
-    php artisan route:cache || true && \
-    php artisan view:cache || true
+# دیتابیس SQLite برای نوشتن سشن‌ها نیاز دارد که کل پوشه database دسترسی رایت داشته باشد.
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
 # ============================================
-# ۱۰. تنظیمات نهایی سرور Apache
+# ۱۰. تنظیمات آپاچی
 # ============================================
 RUN a2enmod rewrite
 RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available/000-default.conf

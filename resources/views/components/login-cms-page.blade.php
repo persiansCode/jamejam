@@ -3,7 +3,7 @@
 @endpush
 <div class=" w-[90%] md:w-[50%] m-auto mt-38">
     <x-header.header/>
-      <form wire:submit="submit" method="post" class="bg-black/40 p-8 rounded-2xl">
+  <form wire:submit.prevent="submit" class="bg-black/40 p-8 rounded-2xl">
 
        <div class="flex items-center justify-between">
               <h4 class="text-2xl font-bold mb-6 text-gray-200">فرم ورود</h4>
@@ -21,10 +21,9 @@
               @error("email")
                     <p class="text-red-400 text-[16px] px-6 ">{{ $message  }}</p>
                 @enderror
-        <input type="tel" dir="rtl" placeholder=" رمز عبور "
-          wire:model="password"
-
-          class="w-full bg-black/30 border border-white/20 rounded-2xl px-5 py-4 mb-4 placeholder-gray-300">
+       <input type="password" placeholder=" رمز عبور "
+       wire:model="password"
+       class="w-full bg-black/30 border border-white/20 rounded-2xl px-5 py-4 mb-4 placeholder-gray-300">
               @error("password")
                     <p class="text-red-400 text-[16px] px-6 ">{{ $message  }}</p>
                 @enderror

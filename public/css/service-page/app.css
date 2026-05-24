@@ -1,0 +1,96 @@
+#body {
+    background-color: #000000;
+    background-image: radial-gradient(circle at 10% 10%, rgba(40, 106, 238, 0.535) 0%, transparent 45%),
+                      radial-gradient(circle at 88% 65%, rgba(157, 66, 237, 0.551) 0%, transparent 45%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+
+    /* === کاملاً مخفی کردن اسکرول بار سایدبار در تمام مرورگرها === */
+    
+    /* کروم، سافاری، Edge، Opera */
+    .sidebar-scroll::-webkit-scrollbar {
+        width: 0px !important;
+        height: 0px !important;
+        background: transparent !important;
+        display: none !important;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-track {
+        background: transparent !important;
+        display: none !important;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+        background: transparent !important;
+        display: none !important;
+    }
+    
+    /* فایرفاکس */
+    .sidebar-scroll {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    
+    /* مخفی کردن المنت‌های x-cloak تا Alpine.js لود شود */
+    [x-cloak] { display: none !important; }
+    
+    /* استایل‌های درگ اسلایدر */
+    .drag-area {
+        width: 100%;
+        overflow-x: auto;
+        cursor: grab;
+        scroll-behavior: smooth;
+        user-select: none;
+    }
+    
+    /* اسکرول بار افقی نازک برای درگ اسلایدر (اختیاری) */
+    .drag-area::-webkit-scrollbar {
+        height: 4px;
+    }
+    .drag-area::-webkit-scrollbar-track {
+        background: #1a1a1a;
+        border-radius: 10px;
+    }
+    .drag-area::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 10px;
+    }
+
+    .drag-area.dragging {
+        cursor: grabbing;
+        scroll-behavior: auto;
+    }
+
+    .drag-area.dragging .image-card {
+        pointer-events: none;
+    }
+
+    .image-track {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        width: max-content;
+    }
+
+    .image-card {
+        width: 280px;
+        height: 280px;
+        object-fit: cover;
+        border-radius: 16px;
+        transition: transform 0.3s;
+        cursor: pointer;
+    }
+
+    .image-card:hover {
+        transform: scale(1.05);
+    }
+    
+    /* جلوگیری از انتخاب متن هنگام درگ سایدبار */
+    .resizing {
+        user-select: none !important;
+        cursor: col-resize !important;
+    }
+

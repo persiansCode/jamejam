@@ -1,0 +1,38 @@
+@import "tailwindcss";
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import 'sweetalert2/dist/sweetalert2.min.css';
+@font-face {
+    font-family: 'YourCustomFont';
+    src: url('./Vazir-light.ttf') ;
+         /* url('/fonts/YourCustomFont.woff') format('woff'); */
+
+  }
+
+  * {
+    font-family: 'YourCustomFont', sans-serif; /* Use your custom font */
+  }
+
+@layer base {
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+    
+    main {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+}
+html {
+    scroll-behavior: smooth;
+}

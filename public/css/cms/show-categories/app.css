@@ -1,0 +1,86 @@
+body {
+    background-color: #000000;
+    background-image: radial-gradient(circle at 10% 10%, rgba(40, 106, 238, 0.535) 0%, transparent 45%),
+                      radial-gradient(circle at 88% 65%, rgba(157, 66, 237, 0.551) 0%, transparent 45%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+    .custom-table {
+            background-color: rgba(255, 255, 255, 0.03) !important; /* کمی روشن‌تر از سایدبار */
+            backdrop-filter: blur(10px);
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .custom-table thead tr {
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .custom-table thead th {
+            padding: 16px;
+            font-weight: 600;
+            color: #e5e5e5;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .custom-table tbody tr {
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .custom-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .custom-table tbody td {
+            padding: 14px 16px;
+            color: #d1d5db;
+        }
+    
+
+
+/* مدیریت اسکرول بار برای کل صفحه */
+html {
+    overflow-y: scroll; /* همیشه جا برای اسکرول نگه دار */
+}
+
+/* مخفی کردن اسکرول بار وقتی صفحه اسکرول نمی‌خواهد */
+.no-scrollbar {
+    scrollbar-width: none; /* فایرفاکس */
+    -ms-overflow-style: none; /* IE و اج */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* کروم، سافاری، اپرا */
+}
+
+/* استایل زیبا برای اسکرول بار (وقتی نیاز است) */
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* فایرفاکس */
+.custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}

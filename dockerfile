@@ -86,16 +86,18 @@ RUN touch database/database.sqlite
 # ============================================
 # ۸. تنظیم فایل خط محیطی و اجرای مایگریشن‌ها در زمان بیلد
 # ============================================
+# ============================================
+# ۸. تنظیم فایل خط محیطی و اجرای مایگریشن‌ها در زمان بیلد
+# ============================================
 RUN cp .env.example .env || echo "APP_ENV=production" > .env
 
-# اجرای مایگریشن و سیدر و بیک (Bake) کردن داده‌ها درون ایمیج داکر
+# اجرای مایگریشن و سیدر و بیک کردن داده‌ها درون ایمیج داکر
 RUN php artisan key:generate --force && \
     php artisan migrate --force && \
     php artisan db:seed --force --class=UserTestSeeder || echo "Seeder skipped"
 
-# بهینه‌سازی سرسام‌آور سرعت لاراول در پروداکشن
-RUN php artisan config:cache && \
-    php artisan route:cache && \
+# فقط ویوها و مسیرها را کش میکنیم (کانفیگ را کش نمیکنیم تا متغیرهای رندر زنده خوانده شوند)
+RUN php artisan route:cache && \
     php artisan view:cache && \
     php artisan storage:link --force || true
 
@@ -106,11 +108,13 @@ RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
 # ============================================
-# ۱۰. تنظیمات آپاچی
+# ۱۰. تنظیمات آپاچی و دستور استارت هوشمند
 # ============================================
 RUN a2enmod rewrite
 RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available/000-default.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+
+# شاه‌کلید حل مشکل: قبل از لود شدن آپاچی، مطمئن می‌شویم کش کانفیگ کاملاً پاک است
+CMD ["sh", "-c", "php artisan config:clear && apache2-foreground"]

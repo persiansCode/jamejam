@@ -1,7 +1,6 @@
-# استفاده از image رسمی PHP با Apache
 FROM php:8.2-apache
 
-# نصب وابستگی‌های سیستم و افزونه‌های PHP
+# نصب وابستگی‌ها
 RUN apt-get update && apt-get install -y \
     git curl libpng-dev libonig-dev libxml2-dev zip unzip \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
@@ -9,16 +8,22 @@ RUN apt-get update && apt-get install -y \
 # نصب Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# کپی فایل‌های پروژه به دایرکتوری وب سرور
+# تنظیم DocumentRoot به پوشه public لاراول
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+
+# کپی پروژه
 COPY . /var/www/html
 
-# تنظیم مجوزهای صحیح برای ذخیره‌سازی و کش
+# اصلاح پیکربندی Apache
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# تنظیم دسترسی‌ها
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# فعال کردن rewrite mod آپاچی
+# فعال کردن mod_rewrite
 RUN a2enmod rewrite
 
-# 🚨 مهم: مشخص کردن پورت و دستور اجرا (حذف این خط باعث خطای Application exited early می‌شود)
 EXPOSE 80
 CMD ["apache2-foreground"]

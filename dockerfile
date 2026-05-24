@@ -36,11 +36,11 @@ ENV COMPOSER_PROCESS_TIMEOUT=3600
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /var/www/html
-
 # ============================================
-# ۳. کپی کردن «فقط» فایل‌های پکیج (شاه‌کلید سرعت بیلد)
+# ۳. کپی کردن فایل‌های پکیج و تنظیمات فرانت‌اندر
 # ============================================
-COPY composer.json composer.lock* package.json package-lock.json* ./
+# فایل کانفیگ vite را هم همینجا کپی میکنیم تا npm run build در مرحله ۵ به آن دسترسی داشته باشد
+COPY composer.json composer.lock* package.json package-lock.json* vite.config.js* ./
 
 # ============================================
 # ۴. متلاشی کردن میرورهای مخرب (Runflare) در فایل‌های Lock
@@ -52,18 +52,14 @@ RUN if [ -f package-lock.json ]; then sed -i 's|https://mirror-npm.runflare.com/
     npm config set registry https://registry.npmjs.org/
 
 # ============================================
-# ۵. نصب پکیج‌ها (مستقیم، بدون معطلی و با استفاده از کش داکر)
-# ============================================
-# ============================================
-# ۵. نصب پکیج‌ها (مستقیم، بدون معطلی و با استفاده از کش داکر)
+# ۵. نصب پکیج‌ها و کامپایل کردن استایل‌ها
 # ============================================
 RUN composer install --no-dev --no-autoloader --no-interaction --prefer-dist
 
 RUN if [ -f package.json ]; then \
         npm install --fetch-timeout=600000 --fetch-retries=5 && \
         npm run build; \
-    fi
-# ============================================
+    fi=====================================
 # ۶. کپی کردن کل کدهای پروژه و لود نهایی اتولودر
 # ============================================
 COPY . .

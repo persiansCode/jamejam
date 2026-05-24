@@ -1,0 +1,8 @@
+node_modules
+.git
+.env
+vendor
+storage/logs/*
+*.log
+.idea
+.DS_Store

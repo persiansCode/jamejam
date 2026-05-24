@@ -54,13 +54,15 @@ RUN if [ -f package-lock.json ]; then sed -i 's|https://mirror-npm.runflare.com/
 # ============================================
 # ۵. نصب پکیج‌ها (مستقیم، بدون معطلی و با استفاده از کش داکر)
 # ============================================
+# ============================================
+# ۵. نصب پکیج‌ها (مستقیم، بدون معطلی و با استفاده از کش داکر)
+# ============================================
 RUN composer install --no-dev --no-autoloader --no-interaction --prefer-dist
 
 RUN if [ -f package.json ]; then \
         npm install --fetch-timeout=600000 --fetch-retries=5 && \
-        (npm run build || npm run production || echo "No build script found"); \
+        npm run build; \
     fi
-
 # ============================================
 # ۶. کپی کردن کل کدهای پروژه و لود نهایی اتولودر
 # ============================================

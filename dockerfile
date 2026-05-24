@@ -59,7 +59,7 @@ RUN composer install --no-dev --no-autoloader --no-interaction --prefer-dist
 RUN if [ -f package.json ]; then \
         npm install --fetch-timeout=600000 --fetch-retries=5 && \
         npm run build; \
-    fi=====================================
+    fi
 # ۶. کپی کردن کل کدهای پروژه و لود نهایی اتولودر
 # ============================================
 COPY . .

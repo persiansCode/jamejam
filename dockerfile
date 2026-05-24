@@ -40,15 +40,13 @@ WORKDIR /var/www/html
 # ============================================
 # ۳. کپی کردن «فقط» فایل‌های پکیج (شاه‌کلید سرعت بیلد)
 # ============================================
-# با این کار، اگر کدهای پروژه‌ات را تغییر دهی، مراحل سنگین دانلود پکیج‌ها کلاً کش شده و زیر ۵ ثانیه رد می‌شوند.
 COPY composer.json composer.lock* package.json package-lock.json* ./
 
 # ============================================
 # ۴. متلاشی کردن میرورهای مخرب (Runflare) در فایل‌های Lock
 # ============================================
 RUN if [ -f composer.lock ]; then sed -i 's|https://mirror-composer.runflare.com/|https://repo.packagist.org/|g' composer.lock; fi && \
-    composer config --global repo.packagist composer https://packagist.org && \
-    composer config --global download-parallel true
+    composer config --global repo.packagist composer https://packagist.org
 
 RUN if [ -f package-lock.json ]; then sed -i 's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' package-lock.json; fi && \
     npm config set registry https://registry.npmjs.org/
@@ -89,7 +87,6 @@ RUN touch database/database.sqlite
 RUN cp .env.example .env || echo "APP_ENV=production" > .env
 
 # اجرای مایگریشن و سیدر و بیک (Bake) کردن داده‌ها درون ایمیج داکر
-# چون رندر رایگان بعد از مدتی ری‌استارت می‌شود، این کار تضمین می‌کند دیتابیس همیشه آماده است.
 RUN php artisan key:generate --force && \
     php artisan migrate --force && \
     php artisan db:seed --force --class=UserTestSeeder || echo "Seeder skipped"
@@ -103,7 +100,6 @@ RUN php artisan config:cache && \
 # ============================================
 # ۹. دسترسی‌های نهایی (حل قطعی ارور سشن و دیتابیس SQLite)
 # ============================================
-# دیتابیس SQLite برای نوشتن سشن‌ها نیاز دارد که کل پوشه database دسترسی رایت داشته باشد.
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
